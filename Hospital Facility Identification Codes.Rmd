@@ -1,0 +1,63 @@
+---
+title: "Hospital Facility Identification Codes"
+author: "Kaitlan Wong"
+date: "2023-04-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#Load libraries 
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(ggmap)
+library(knitr)
+library(gtable)
+library(grid)
+library(readr)
+library(haven)
+library(foreign)
+```
+
+```{r}
+# Read DSHS DIR data
+
+dshs_data_dir_21 <- read.dbf("C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\HS21FINAL2_7\\HS21DIR.dbf") 
+
+```
+
+
+
+```{r}
+# Confirm this data set has the variables we need (Facility Identification Code and Facility Name)
+# See code book to verify
+
+# View all data
+view(dshs_data_dir_21)
+
+# See variable names
+names(dshs_data_dir_21)  
+```
+
+
+
+```{r}
+# Filter for the hopsitals we need
+
+facilities <- dshs_data_dir_21 %>% 
+  filter(FACILITY %in% c(
+    "University Hospital",
+    "Parkland Memorial Hospital",
+    "University Medical Center of El Paso",
+    "Harris Health System Ben Taub Hospital"))
+
+```
+
+
+```{r}
+# View hospital data, double check correct counties
+view(facilities)
+
+```
+
