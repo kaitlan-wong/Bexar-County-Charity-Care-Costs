@@ -1,0 +1,159 @@
+---
+title: "Bexar County Charity Care Costs 2019"
+author: "Kaitlan Wong"
+date: "2023-04-13"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#Load libraries 
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(ggmap)
+library(knitr)
+library(gtable)
+library(grid)
+library(readr)
+library(haven)
+library(foreign)
+library(purrr)
+
+```
+
+
+```{r}
+# Read DSHS Section E financial and utilization data
+dshs_E_19 <- read.dbf("C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\ASH19dataset2_24\\HS19E1.dbf") 
+
+# Read DSHS facility information data
+dshs_dir_19 <- read.dbf("C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\ASH19dataset2_24\\HS19DIR.dbf") 
+
+# Read DSHS Section I Inpatient and Outpatient Bad Debt and Charity Charges Data
+dshs_I_19 <- read.dbf("C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\ASH19dataset2_24\\HS19HJ.dbf") 
+
+```
+
+
+```{r}
+# Confirm the Section E data set has the variables we need (Other Operating Expenses and Total Expenses less bad debt)
+# See code book to verify (Section E for 2020 survey)
+
+# View all data in new tab
+view(dshs_E_19)
+
+#Preview data
+head(dshs_E_19)
+
+# See variable names
+names(dshs_E_19)  
+
+```
+
+
+```{r}
+# Join all data frames in list
+list_hospitals = list(dshs_dir_19,dshs_E_19,dshs_I_19)
+
+# Join multiple dataframes
+combined_hospital_data <- list_hospitals %>% 
+  reduce(inner_join, by='FID')
+
+```
+
+
+```{r}
+# Filter for hospitals we want to compare
+hospital_data_19 <- combined_hospital_data %>% 
+  filter(FID %in% c(293105, 1130950, 1411240, 2015024))
+
+```
+
+
+```{r}
+
+# Convert financial variables to numeric
+transform(hospital_data_19, E3M1 = as.numeric(E3M1))
+transform(hospital_data_19, E4C1 = as.numeric(E4C1))
+transform(hospital_data_19, E3C1 = as.numeric(E3C1))
+transform(hospital_data_19, E5A1 = as.numeric(E5A1))
+transform(hospital_data_19, E5B1 = as.numeric(E5B1))
+transform(hospital_data_19, I2C = as.numeric(I2C))
+
+# Calculate cost-to-charge-ratio and assign to new variable
+hospital_data_19$ctc_ratio <- 
+  hospital_data_19$E3M1 / (hospital_data_19$E4C1 + hospital_data_19$E3C1)
+
+# Calculate charity care charges (bad debt + financial aid) and assign to new variable
+hospital_data_19$charity_charges_bf <- 
+  hospital_data_19$E5A1 + hospital_data_19$E5B1
+
+# Calculate charity care costs (cost-to-charge-ratio * (bad debt + financial assistance)) and assign to new variable
+hospital_data_19$charity_costs_bf <- 
+  hospital_data_19$charity_charges_bf * hospital_data_19$ctc_ratio
+
+# Calculate alternative measure of charity costs (cost-to-charge-ratio * financial assistance) and assign to new variable
+hospital_data_19$charity_costs_f <- 
+  hospital_data_19$E5B1 * hospital_data_19$ctc_ratio
+
+# Calculate another alternative measure of charity costs (cost-to-charge-ratio * I2C)
+hospital_data_19$charity_costs_i <- 
+  hospital_data_19$I2C * hospital_data_19$ctc_ratio
+
+```
+
+
+```{r}
+# Rename column names
+hospital_data_19 <- hospital_data_19 %>% rename(
+  "Other_Operating_Revenue" = E3C1,
+  "Total_Expenses_less_bad_debt" = E3M1,
+  "Total_Gross_Inpatient_Revenue"  = E4A1,
+  "Total_Gross_Outpatien_Revenue" = E4B1,
+  "Total_Gross_Patient_Revenue" = E4C1,
+  "Bad_Debt" = E5A1,
+  "Financial_Assistance" = E5B1,
+  "Charity_Charges_I2C" = I2C)
+
+```
+
+
+```{r}
+# Subset data to only keep variables we need
+hospital_data_19_subset <- hospital_data_19 %>% 
+  select(YEAR,
+         FID,
+         FACILITY,
+         COUNTY, 
+         STATE,
+         Other_Operating_Revenue,
+         Total_Expenses_less_bad_debt,
+         Total_Gross_Inpatient_Revenue,
+         Total_Gross_Outpatien_Revenue,
+         Total_Gross_Patient_Revenue,
+         Bad_Debt, 
+         Financial_Assistance,
+         ctc_ratio, 
+         Charity_Charges_I2C,
+         charity_charges_bf, 
+         charity_costs_bf,
+         charity_costs_f,
+         charity_costs_i)
+
+
+# Print the first few rows of the new data frame
+head(hospital_data_19_subset)
+
+
+```
+
+
+```{r}
+#Create excel file with new variables 
+
+library(writexl)
+write_xlsx(hospital_data_19_subset,"C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\CharityCosts_19_AHA_DSHS.xlsx")
+
+```
