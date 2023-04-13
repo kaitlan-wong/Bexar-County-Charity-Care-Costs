@@ -114,7 +114,8 @@ hospital_data_21 <- hospital_data_21 %>% rename(
   "Total_Gross_Patient_Revenue" = E4C1,
   "Bad_Debt" = E5A,
   "Financial_Assistance" = E5B1,
-  "Charity_Charges_I2C" = I2C)
+  "Charity_Charges_I2C" = I2C,
+  "YEAR" = YEAR.x)
 
 ```
 
@@ -122,7 +123,7 @@ hospital_data_21 <- hospital_data_21 %>% rename(
 ```{r}
 # Subset data to only keep variables we need
 hospital_data_21_subset <- hospital_data_21 %>% 
-  select(YEAR.x,
+  select(YEAR,
          FID,
          FACILITY,
          COUNTY, 
@@ -148,3 +149,11 @@ head(hospital_data_21_subset)
 
 ```
 
+
+```{r}
+#Create excel file with new variables 
+
+library(writexl)
+write_xlsx(hospital_data_21_subset,"C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\CharityCosts_21_AHA_DSHS.xlsx")
+
+```
