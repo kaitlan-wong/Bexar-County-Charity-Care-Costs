@@ -38,7 +38,7 @@ dshs_I_18 <- read.dbf("C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County
 
 ```{r}
 # Confirm the Section E data set has the variables we need (Other Operating Expenses and Total Expenses less bad debt)
-# See code book to verify (Section E for 2020 survey)
+# See code book to verify (Section E for 2017-2021 surveys)
 
 # View all data in new tab
 view(dshs_E_18)
