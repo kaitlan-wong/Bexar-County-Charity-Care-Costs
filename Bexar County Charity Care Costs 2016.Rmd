@@ -25,13 +25,13 @@ library(purrr)
 
 ```{r}
 # Read DSHS Section E financial and utilization data
-dshs_D_17 <- read.dbf("C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\ASH2016Dataset\\HS16CD.dbf") 
+dshs_D_16 <- read.dbf("C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\ASH2016Dataset\\HS16CD.dbf") 
 
 # Read DSHS facility information data
-dshs_dir_17 <- read.dbf("C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\ASH2016Dataset\\HS16DIR.dbf") 
+dshs_dir_16 <- read.dbf("C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\ASH2016Dataset\\HS16DIR.dbf") 
 
 # Read DSHS Section I Inpatient and Outpatient Bad Debt and Charity Charges Data
-dshs_I_17 <- read.dbf("C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\ASH2016Dataset\\HS16EI.dbf") 
+dshs_I_16 <- read.dbf("C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\ASH2016Dataset\\HS16EI.dbf") 
 
 ```
 
@@ -41,16 +41,16 @@ dshs_I_17 <- read.dbf("C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County
 # See code book to verify (Section E for 2020 survey)
 
 # View all data in new tab
-view(dshs_D_17)
+view(dshs_D_16)
 
-view(dshs_I_17)
+view(dshs_I_16)
 
 ```
 
 
 ```{r}
 # Join all data frames in list
-list_hospitals = list(dshs_dir_17,dshs_D_17,dshs_I_17)
+list_hospitals = list(dshs_dir_16,dshs_D_16,dshs_I_16)
 
 # Join multiple dataframes
 combined_hospital_data <- list_hospitals %>% 
@@ -61,7 +61,7 @@ combined_hospital_data <- list_hospitals %>%
 
 ```{r}
 # Filter for hospitals we want to compare
-hospital_data_17 <- combined_hospital_data %>% 
+hospital_data_16 <- combined_hospital_data %>% 
   filter(FID %in% c(293105, 1130950, 1411240, 2015024))
 
 ```
@@ -70,39 +70,39 @@ hospital_data_17 <- combined_hospital_data %>%
 ```{r}
 
 # Convert financial variables to numeric
-transform(hospital_data_17, D3M1 = as.numeric(D3M1))
-transform(hospital_data_17, D4C1 = as.numeric(D4C1))
-transform(hospital_data_17, D3C1 = as.numeric(D3C1))
-transform(hospital_data_17, D5A1 = as.numeric(D5A1))
-transform(hospital_data_17, D5B1 = as.numeric(D5B1))
-transform(hospital_data_17, I2C = as.numeric(I2C))
+transform(hospital_data_16, D3M1 = as.numeric(D3M1))
+transform(hospital_data_16, D4C1 = as.numeric(D4C1))
+transform(hospital_data_16, D3C1 = as.numeric(D3C1))
+transform(hospital_data_16, D5A1 = as.numeric(D5A1))
+transform(hospital_data_16, D5B1 = as.numeric(D5B1))
+transform(hospital_data_16, I2C = as.numeric(I2C))
 
 # Calculate cost-to-charge-ratio and assign to new variable
-hospital_data_17$ctc_ratio <- 
-  hospital_data_17$D3M1 / (hospital_data_17$D4C1 + hospital_data_17$D3C1)
+hospital_data_16$ctc_ratio <- 
+  hospital_data_16$D3M1 / (hospital_data_16$D4C1 + hospital_data_16$D3C1)
 
 # Calculate charity care charges (bad debt + financial aid) and assign to new variable
-hospital_data_17$charity_charges_bf <- 
-  hospital_data_17$D5A1 + hospital_data_17$D5B1
+hospital_data_16$charity_charges_bf <- 
+  hospital_data_16$D5A1 + hospital_data_16$D5B1
 
 # Calculate charity care costs (cost-to-charge-ratio * (bad debt + financial assistance)) and assign to new variable
-hospital_data_17$charity_costs_bf <- 
-  hospital_data_17$charity_charges_bf * hospital_data_17$ctc_ratio
+hospital_data_16$charity_costs_bf <- 
+  hospital_data_16$charity_charges_bf * hospital_data_16$ctc_ratio
 
 # Calculate alternative measure of charity costs (cost-to-charge-ratio * financial assistance) and assign to new variable
-hospital_data_17$charity_costs_f <- 
-  hospital_data_17$D5B1 * hospital_data_17$ctc_ratio
+hospital_data_16$charity_costs_f <- 
+  hospital_data_16$D5B1 * hospital_data_16$ctc_ratio
 
 # Calculate another alternative measure of charity costs (cost-to-charge-ratio * I2C)
-hospital_data_17$charity_costs_i <- 
-  hospital_data_17$I2C * hospital_data_17$ctc_ratio
+hospital_data_16$charity_costs_i <- 
+  hospital_data_16$I2C * hospital_data_16$ctc_ratio
 
 ```
 
 
 ```{r}
 # Rename column names
-hospital_data_17 <- hospital_data_17 %>% rename(
+hospital_data_16 <- hospital_data_16 %>% rename(
   "Other_Operating_Revenue" = D3C1,
   "Total_Expenses_less_bad_debt" = D3M1,
   "Total_Gross_Inpatient_Revenue"  = D4A1,
@@ -117,7 +117,7 @@ hospital_data_17 <- hospital_data_17 %>% rename(
 
 ```{r}
 # Subset data to only keep variables we need
-hospital_data_17_subset <- hospital_data_17 %>% 
+hospital_data_16_subset <- hospital_data_16 %>% 
   select(YEAR,
          FID,
          FACILITY,
@@ -139,7 +139,7 @@ hospital_data_17_subset <- hospital_data_17 %>%
 
 
 # Print the first few rows of the new data frame
-head(hospital_data_17_subset)
+head(hospital_data_16_subset)
 
 
 ```
@@ -149,6 +149,6 @@ head(hospital_data_17_subset)
 #Create excel file with new variables 
 
 library(writexl)
-write_xlsx(hospital_data_17_subset,"C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\CharityCosts_17_AHA_DSHS.xlsx")
+write_xlsx(hospital_data_16_subset,"C:\\Users\\kaitl\\Documents\\Every Texan\\R\\Bexar-County-Charity-Care-Costs\\CharityCosts_16_AHA_DSHS.xlsx")
 
 ```
